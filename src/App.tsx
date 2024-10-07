@@ -24,7 +24,7 @@ function App() {
 			}
 
 			if (item.value) {
-				const prevIndex = (freeIndex || index) - 1
+				const prevIndex = (freeIndex !== undefined ? freeIndex : index) - 1
 
 				if (
 					item.value === arr[prevIndex]?.value &&
