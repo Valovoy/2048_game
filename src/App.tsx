@@ -1,5 +1,6 @@
 import './App.css'
 
+type Direction = 'left' | 'right'
 type Tile = {
 	value: number | null
 	isCombined: boolean
@@ -13,33 +14,58 @@ const arr: Tile[] = [
 ]
 
 function App() {
-	const left = (): void => {
+	const moveHorizontal = (direction: Direction = 'left') => {
 		let freeIndex: number | undefined
 
-		arr.forEach((item, index) => {
-			item.isCombined = false
+		const config = {
+			start: direction === 'right' ? arr.length - 1 : 0,
+			end: direction === 'right' ? -1 : arr.length,
+			step: direction === 'right' ? -1 : 1,
+		}
 
-			if (!item.value && freeIndex === undefined) {
-				freeIndex = index
+		for (let i = config.start; i !== config.end; i += config.step) {
+			const currentTile = arr[i]
+
+			currentTile.isCombined = false
+
+			if (!currentTile.value && freeIndex === undefined) {
+				freeIndex = i
+
+				continue
 			}
 
-			if (item.value) {
-				const prevIndex = (freeIndex !== undefined ? freeIndex : index) - 1
+			if (currentTile.value) {
+				const prevIndex = (freeIndex ?? i) - config.step
+				const prevTile = arr[prevIndex]
 
-				if (
-					item.value === arr[prevIndex]?.value &&
-					!arr[prevIndex]?.isCombined
-				) {
-					arr[prevIndex].value += item.value
-					arr[prevIndex].isCombined = true
-					item.value = null
+				if (canCombineCells(currentTile, prevTile)) {
+					combineCells(prevTile, currentTile)
+
+					freeIndex = freeIndex ?? i
 				} else if (freeIndex !== undefined) {
-					arr[freeIndex].value = item.value
-					item.value = null
-					freeIndex++
+					moveCell(arr[freeIndex], currentTile)
+
+					freeIndex += config.step
 				}
 			}
-		})
+		}
+	}
+
+	const canCombineCells = (current: Tile, prev: Tile | undefined): boolean => {
+		return prev?.value === current.value && !prev?.isCombined
+	}
+
+	const combineCells = (prev: Tile, current: Tile): void => {
+		if (prev.value !== null && current.value !== null) {
+			prev.value += current.value
+			prev.isCombined = true
+			current.value = null
+		}
+	}
+
+	const moveCell = (prev: Tile, current: Tile): void => {
+		prev.value = current.value
+		current.value = null
 	}
 
 	return <></>
